@@ -96,6 +96,13 @@ def test_bark(server, key):
     r = sh(f'curl -sS --max-time 8 "{url}/{title}/{body}"')
     return r
 
+def modem_reset():
+    threading.Thread(target=lambda: (
+        sh("mmcli -m 0 --disable", timeout=15),
+        __import__('time').sleep(5),
+        sh("mmcli -m 0 --enable", timeout=15)
+    ), daemon=True).start()
+
 def connect_wifi(ssid, psk):
     # Remove old non-AP profiles
     raw = sh("nmcli -t -f NAME,TYPE c show")
@@ -223,6 +230,11 @@ async function saveBark(){{
   const d=await r.json();
   toast(d.ok?'Bark 配置已保存':'保存失败',d.ok);
 }}
+async function resetModem(){
+  toast('正在重置蜂窝信号，约 10 秒后刷新页面...');
+  await fetch('/api/modem/reset',{method:'POST'});
+  setTimeout(()=>location.reload(),12000);
+}
 async function testBark(){{
   toast('发送测试通知...');
   const r=await fetch('/api/bark/test',{{method:'POST'}});
@@ -250,6 +262,9 @@ def build_dashboard():
       <div class="stat"><div class="stat-label">运行时长</div><div class="stat-value">{s['uptime'] or '--'}</div></div>
       <div class="stat"><div class="stat-label">已连 WiFi</div><div class="stat-value">{html.escape(s['ssid'] or '--')}</div></div>
       <div class="stat"><div class="stat-label">蜂窝状态</div><div class="stat-value">{s['modem_state'] or '--'}</div></div>
+      <div class="stat" style="display:flex;align-items:flex-end">
+        <button onclick="resetModem()" style="width:100%;padding:.5rem;font-size:.8rem;background:#334155">📡 重新搜索信号</button>
+      </div>
       <div class="stat"><div class="stat-label">信号强度</div><div class="stat-value">{sig_badge}</div></div>
       <div class="stat"><div class="stat-label">运营商</div><div class="stat-value">{s['operator'] or '--'}</div></div>
     </div>
@@ -368,6 +383,9 @@ class H(BaseHTTPRequestHandler):
             self._json({"ok": True}); return
         if self.path == "/api/bark":
             save_bark(body.get("server","https://api.day.app"), body.get("key",""))
+            self._json({"ok": True}); return
+        if self.path == "/api/modem/reset":
+            modem_reset()
             self._json({"ok": True}); return
         if self.path == "/api/bark/test":
             b = get_bark()
