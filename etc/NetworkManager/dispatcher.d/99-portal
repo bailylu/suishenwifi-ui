@@ -1,6 +1,8 @@
 #!/bin/bash
+# 99-portal - 随WiFi热点和后台切换脚本
 IFACE="$1"; ACTION="$2"
 CON="$CONNECTION_ID"
+NOTIFY_FLAG="/var/lib/captive-portal/bark-notified"
 
 case "$IFACE:$ACTION" in
   wlan0:up)
@@ -10,10 +12,16 @@ case "$IFACE:$ACTION" in
       systemctl stop  admin-panel.service    2>/dev/null
       systemctl start captive-portal.service
     else
-      # STA 起来 → 关门户，启动后台，推送新 IP
+      # STA 起来 → 关门户，启动后台
       systemctl stop  captive-portal.service 2>/dev/null
       systemctl start admin-panel.service
-      systemctl restart bark-notify.service
+      # 只在IP变化时发送通知
+      CURRENT_IP=$(ip -4 -br addr show wlan0 2>/dev/null | awk '{print $3}' | cut -d/ -f1)
+      LAST_IP=$(cat "$NOTIFY_FLAG" 2>/dev/null)
+      if [ "$CURRENT_IP" != "$LAST_IP" ] && [ -n "$CURRENT_IP" ]; then
+        systemctl restart bark-notify.service
+        echo "$CURRENT_IP" > "$NOTIFY_FLAG"
+      fi
     fi
     ;;
   wlan0:down)
