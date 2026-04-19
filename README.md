@@ -13,36 +13,15 @@
 ## 硬件要求
 
 - 高通 410（MSM8916）随身WiFi 设备
-- 已刷入 ARM Debian 或 ARM Ubuntu（见下方刷机说明）
+- **已刷入 ARM Debian 或 ARM Ubuntu**（本项目不提供刷机支持，请自行准备好 Linux 系统）
 - 已插入 SIM 卡
 
-## 刷机说明
+### SSH 连接设备
 
-> 如果你的设备已经运行 Linux 系统，跳过此节直接看「安装」。
-
-### 推荐固件
-
-社区维护的高通 410 随身WiFi Debian 镜像，支持 NetworkManager、ModemManager、mmcli。
-
-### 刷机步骤（以 Windows 为例）
-
-1. 下载 [Qualcomm USB Driver](https://developer.qualcomm.com/software/usb-drivers) 并安装
-2. 设备关机，按住复位键同时插入 USB，进入 EDL（9008）模式
-   - 设备管理器中出现 `Qualcomm HS-USB QDLoader 9008` 即成功
-3. 使用 [QFIL](https://qfil.en.softonic.com/) 或 `edl` 工具烧录固件：
-   ```
-   edl qfil --image debian-arm64.img
-   ```
-4. 拔插 USB，设备正常启动后通过 USB 串口或 ADB 获取 shell
-
-### 首次 SSH 连接
-
-设备默认通过 USB RNDIS 共享网络，IP 通常为 `192.168.3.22` 或 `192.168.100.1`：
+设备通过 USB RNDIS 共享网络，IP 通常为 `192.168.3.22` 或 `192.168.100.1`：
 
 ```bash
 ssh root@192.168.3.22
-# 或
-ssh root@192.168.100.1
 ```
 
 ## 安装
@@ -51,7 +30,7 @@ ssh root@192.168.100.1
 
 ```bash
 # 1. 下载项目
-git clone https://github.com/YOUR_GITHUB/suishenwifi.git
+git clone https://github.com/bailylu/suishenwifi.git
 cd suishenwifi
 
 # 2. 上传到设备（在你的电脑上执行）
@@ -71,7 +50,7 @@ bash install.sh https://api.day.app 你的BarkKey 你的WiFi名称 你的WiFi密
 ### 方式二：curl 一键（设备已联网时）
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB/suishenwifi/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bailylu/suishenwifi/main/install.sh | bash
 ```
 
 ### 安装参数说明
