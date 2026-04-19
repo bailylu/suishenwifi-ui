@@ -1,11 +1,12 @@
 [Unit]
-Description=Modem watchdog - reboot if not registered after 10min
+Description=Modem watchdog - restart modem if not registered every 10min
 After=network.target
 
 [Service]
-Type=oneshot
+Type=simple
 ExecStart=/opt/captive-portal/modem-watchdog.sh
-RemainAfterExit=no
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
