@@ -121,6 +121,14 @@ fi
 
 # ── 7. systemd 服务 ───────────────────────────────────
 info "注册系统服务..."
+# 清理遗留 sms.service（旧版 DbusSmsForward，会崩溃重启把 CPU 和短信通道占死）
+if systemctl list-unit-files 2>/dev/null | grep -q '^sms\.service'; then
+    warn "检测到遗留 sms.service，正在下线"
+    systemctl stop sms.service 2>/dev/null || true
+    systemctl disable sms.service 2>/dev/null || true
+    [ -f /etc/systemd/system/sms.service ] && \
+      mv /etc/systemd/system/sms.service /etc/systemd/system/sms.service.disabled
+fi
 systemctl daemon-reload
 systemctl enable bark-notify.service
 systemctl enable provision-watchdog.service
