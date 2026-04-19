@@ -4,6 +4,12 @@
 # 用法：bash install.sh [BARK_SERVER] [BARK_KEY] [WIFI_SSID] [WIFI_PASS]
 #   BARK_SERVER 示例：https://api.day.app
 #   BARK_KEY    示例：AbCdEfGhIjKlMn
+#
+# ⚠️ 如果无法连接 GitHub（下载脚本超时），可以先修改网关和DNS：
+#    nmcli connection modify [WIFI名称] ipv4.gateway 你的路由器IP
+#    nmcli connection modify [WIFI名称] ipv4.dns "8.8.8.8;114.114.114.114"
+#    或者指向家里能访问GitHub的设备IP（如电脑IP）
+#    然后重新运行此脚本
 
 set -e
 
