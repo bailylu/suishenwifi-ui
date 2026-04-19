@@ -1,0 +1,12 @@
+[Unit]
+Description=随身WiFi 管理后台
+After=NetworkManager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/admin/admin.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Fallback to AP if STA fails
+After=NetworkManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/captive-portal/provision-watchdog.sh
+
+[Install]
+WantedBy=multi-user.target

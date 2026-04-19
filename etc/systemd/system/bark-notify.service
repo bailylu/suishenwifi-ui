@@ -1,0 +1,11 @@
+[Unit]
+Description=Bark notification on STA up
+After=NetworkManager-wait-online.service
+Wants=NetworkManager-wait-online.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/captive-portal/bark-notify.sh
+
+[Install]
+WantedBy=multi-user.target

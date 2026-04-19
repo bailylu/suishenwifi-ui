@@ -1,0 +1,27 @@
+#!/bin/bash
+IFACE="$1"; ACTION="$2"
+CON="$CONNECTION_ID"
+
+case "$IFACE:$ACTION" in
+  wlan0:up)
+    if [ "$CON" = "suishenwifi" ]; then
+      # AP 起来 → 关后台，启动门户
+      sleep 1
+      systemctl stop  admin-panel.service    2>/dev/null
+      systemctl start captive-portal.service
+    else
+      # STA 起来 → 关门户，启动后台，推送新 IP
+      systemctl stop  captive-portal.service 2>/dev/null
+      systemctl start admin-panel.service
+      systemctl restart bark-notify.service
+    fi
+    ;;
+  wlan0:down)
+    if [ "$CON" = "suishenwifi" ]; then
+      systemctl stop captive-portal.service 2>/dev/null
+    else
+      systemctl stop admin-panel.service    2>/dev/null
+    fi
+    ;;
+esac
+exit 0
