@@ -18,10 +18,12 @@
 
 ### SSH 连接设备
 
-设备通过 USB RNDIS 共享网络，IP 通常为 `192.168.3.22` 或 `192.168.100.1`：
+设备通过 USB RNDIS 共享网络，将设备用 USB 连接电脑后，电脑会获得一个 IP，设备本身的 IP 通常为 `10.42.0.1` 或 `192.168.100.1`（取决于固件）：
 
 ```bash
-ssh root@192.168.3.22
+ssh root@10.42.0.1
+# 或
+ssh root@192.168.100.1
 ```
 
 ## 安装
@@ -33,11 +35,11 @@ ssh root@192.168.3.22
 git clone https://github.com/bailylu/suishenwifi.git
 cd suishenwifi
 
-# 2. 上传到设备（在你的电脑上执行）
-scp -r . root@192.168.3.22:/tmp/suishenwifi/
+# 2. 上传到设备（在你的电脑上执行，IP 替换为你的设备实际 IP）
+scp -r . root@10.42.0.1:/tmp/suishenwifi/
 
 # 3. SSH 进设备执行安装
-ssh root@192.168.3.22
+ssh root@10.42.0.1
 cd /tmp/suishenwifi
 
 # 最简安装（首次配网走热点门户）
