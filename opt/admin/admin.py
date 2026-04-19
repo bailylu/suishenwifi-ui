@@ -230,11 +230,11 @@ async function saveBark(){{
   const d=await r.json();
   toast(d.ok?'Bark 配置已保存':'保存失败',d.ok);
 }}
-async function resetModem(){
+async function resetModem(){{
   toast('正在重置蜂窝信号，约 10 秒后刷新页面...');
-  await fetch('/api/modem/reset',{method:'POST'});
+  await fetch('/api/modem/reset',{{method:'POST'}});
   setTimeout(()=>location.reload(),12000);
-}
+}}
 async function testBark(){{
   toast('发送测试通知...');
   const r=await fetch('/api/bark/test',{{method:'POST'}});
