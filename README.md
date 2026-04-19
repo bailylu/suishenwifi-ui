@@ -35,7 +35,7 @@ ssh root@192.168.100.1
 git clone https://github.com/bailylu/suishenwifi.git
 cd suishenwifi
 
-# 2. 上传到设备（在你的电脑上执行，IP 替换为你的设备实际 IP）
+# 2. 上传到设备（在你电脑上执行，IP 替换为你的设备实际 IP）
 scp -r . root@10.42.0.1:/tmp/suishenwifi/
 
 # 3. SSH 进设备执行安装
@@ -48,6 +48,37 @@ bash install.sh
 # 带参数安装（预填 Bark + WiFi，安装后直接可用）
 bash install.sh https://api.day.app 你的BarkKey 你的WiFi名称 你的WiFi密码
 ```
+
+### ⚠️ 如果无法连接 GitHub
+
+由于设备所在网络限制，可能无法直接访问 GitHub 下载脚本。可通过以下方式解决：
+
+**方法一：修改网关和 DNS**
+
+将设备的网关和 DNS 指向家里能访问 GitHub 的设备（如电脑）：
+
+```bash
+# 查看当前 WiFi 连接名称
+nmcli connection show
+
+# 修改网关（指向路由器IP）
+nmcli connection modify [WiFi名称] ipv4.gateway 192.168.3.1
+
+# 修改DNS（指向能访问GitHub的设备IP，如电脑IP 192.168.3.x）
+nmcli connection modify [WiFi名称] ipv4.dns "192.168.3.x;8.8.8.8"
+
+# 重启网络使配置生效
+nmcli connection down [WiFi名称] && nmcli connection up [WiFi名称]
+
+# 重新运行安装脚本
+cd /tmp/suishenwifi && bash install.sh
+```
+
+**方法二：手动下载并上传**
+
+1. 在能访问 GitHub 的电脑上手动下载项目 zip 包
+2. 通过 USB 或其他方式将文件上传到设备 `/tmp/suishenwifi/`
+3. 在设备上直接运行 `bash install.sh`
 
 ### 方式二：curl 一键（设备已联网时）
 
@@ -100,6 +131,7 @@ opt/
     modem-watchdog.sh               # 开机 10min 蜂窝未注册则重启
   admin/
     admin.py                        # 后台管理 Web 服务（STA 模式，端口 80）
+    watchdog-daemon.sh              # 看门狗守护进程，监控服务状态和网络
 etc/
   systemd/system/
     captive-portal.service          # 由 NM dispatcher 管理，勿手动 enable
@@ -108,7 +140,9 @@ etc/
     provision-watchdog.service      # 开机一次性看门狗
     modem-watchdog.service          # 开机一次性蜂窝看门狗
   NetworkManager/
-    dispatcher.d/99-portal          # AP/STA 切换时启停服务
+    dispatcher.d/
+      99-portal                    # AP/STA 切换时启停服务
+      10-wifi-hotspot-toggle.sh    # WiFi/热点自动切换脚本
     dnsmasq-shared.d/captive.conf   # DNS 全劫持（AP 模式弹窗用）
 sms_forwarder.sh                    # 短信转发脚本（读 /etc/bark.conf）
 ```
@@ -126,19 +160,22 @@ BARK_KEY="你的BarkKey"
 
 ## 常见问题
 
-**Q：手机连上热点后没有自动弹出配网页面？**  
+**Q：手机连上热点后没有自动弹出配网页面？**
 A：部分机型需要手动打开浏览器访问 `http://10.42.1.1`。
 
-**Q：提交配网信息后设备没有重启？**  
+**Q：提交配网信息后设备没有重启？**
 A：等待约 3 秒，设备会自动重启。如未重启请手动执行 `reboot`。
 
-**Q：配网后收不到 Bark 推送？**  
+**Q：配网后收不到 Bark 推送？**
 A：检查 Bark Key 是否正确，可在后台管理页面发送测试推送验证。
 
-**Q：蜂窝信号一直显示为空？**  
+**Q：蜂窝信号一直显示为空？**
 A：SIM 初始化最长需要约 3 分钟，稍等后刷新后台页面即可。
 
-**Q：如何重置回初始配网状态？**  
+**Q：无法连接 GitHub 怎么办？**
+A：参见上方「⚠️ 如果无法连接 GitHub」章节，修改网关和 DNS 指向能访问 GitHub 的设备 IP。
+
+**Q：如何重置回初始配网状态？**
 ```bash
 nmcli c delete <当前WiFi名称>
 rm -f /var/lib/captive-portal/last_failed
@@ -149,7 +186,8 @@ reboot
 
 - **配网门户原理**：AP 模式下 dnsmasq 将所有 DNS 劫持到 `10.42.1.1`，portal.py 监听 80 端口，对非门户请求返回 302 跳转触发 iOS/Android 系统弹窗；443 端口发送 TCP RST 让手机快速降级到 HTTP 探测
 - **服务互斥**：captive-portal（端口 80）和 admin-panel（端口 80）通过 NM dispatcher 互斥启停，AP 模式跑门户，STA 模式跑后台
-- **热点自动切换**：`suishenwifi` profile 设置 `autoconnect=no`，只由 provision-watchdog 在判断 STA 失败后手动激活，避免设备卡在热点模式出不来
+- **热点自动切换**：`suishenwifi` profile 设置 `autoconnect=no`，由 `10-wifi-hotspot-toggle.sh` 脚本根据已保存的 WiFi 配置自动判断切换模式
+- **看门狗守护进程**：持续监控服务状态、wlan0 接口和网络连通性，异常时自动修复
 
 ## License
 
