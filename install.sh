@@ -40,22 +40,7 @@ if [ -n "$MISSING" ]; then
 fi
 info "依赖就绪"
 
-# ── 2. NetworkManager 开启 dnsmasq（AP 弹窗必需）────
-info "配置 NetworkManager dnsmasq..."
-NM_CONF=/etc/NetworkManager/NetworkManager.conf
-if ! grep -q "^dns=dnsmasq" "$NM_CONF" 2>/dev/null; then
-    # 在 [main] 段插入 dns=dnsmasq
-    if grep -q "^\[main\]" "$NM_CONF" 2>/dev/null; then
-        sed -i '/^\[main\]/a dns=dnsmasq' "$NM_CONF"
-    else
-        echo -e "[main]\ndns=dnsmasq" >> "$NM_CONF"
-    fi
-    info "已写入 dns=dnsmasq"
-else
-    info "dnsmasq 已配置"
-fi
-
-# ── 3. 复制程序文件 ───────────────────────────────────
+# ── 2. 复制程序文件 ───────────────────────────────────
 info "复制程序文件..."
 mkdir -p /opt/captive-portal /opt/admin
 mkdir -p /etc/NetworkManager/dispatcher.d
